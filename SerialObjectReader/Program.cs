@@ -1,63 +1,91 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using SerialObjectReader.FileTypes;
 
-using SerialObjectReader.FileTypes;
+namespace SerialObjectReader;
 
-var JSON_EXTENSION = ".json";
-var XML_EXTENSION = ".xml";
-var QUIT = "quit";
-var X = "x";
-
-//Input, open and parse the serialized file.
-var hasValidFile = false;
-ISerialFileReader fileReader = null;
-
-while (!hasValidFile)
+class Program
 {
-    Console.WriteLine("Input the serialized file to be parsed. Supported File Types are:");
-    Console.WriteLine($" - {JSON_EXTENSION}");
-    Console.WriteLine($" - {XML_EXTENSION}");
-    Console.WriteLine("Type Quit or X at any time to close application.");
+    private static SerialFileReader? _fileReader;
 
-    var inputLine = Console.ReadLine();
+    private const string JSON_EXTENSION = ".json";
+    private const string XML_EXTENSION = ".xml";
+    private const string QUIT = "quit";
+    private const string X = "x";
 
-    if (string.IsNullOrWhiteSpace(inputLine)) continue;
+    public static bool HasValidFile { get; private set; }
+    public static bool HasQuit { get; private set; }
 
-    if (inputLine.Equals(QUIT, StringComparison.InvariantCultureIgnoreCase) ||
-         inputLine.Equals(X, StringComparison.InvariantCultureIgnoreCase)) return;
-
-    if (inputLine.EndsWith(JSON_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
+    /*
+     * Reused method for getting a line of text input from the console. Allows for the user to quit the application when desired.
+     */
+    private static string? GetInputFromConsole()
     {
-        fileReader = new JSONSerialFileReader(inputLine);
+        Console.WriteLine("Type Quit or X at any time to close application.");
 
-        if (fileReader.Parse())
+        var inputLine = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(inputLine)) return null;
+
+        if (inputLine.Equals(QUIT, StringComparison.InvariantCultureIgnoreCase) ||
+            inputLine.Equals(X, StringComparison.InvariantCultureIgnoreCase))
         {
-            hasValidFile = true;
+            HasQuit = true;
+            return null;
+        }
+
+        return inputLine;
+    }
+
+    /*
+     * Main Method of the Application. Continue to attempt to read a serialized file until one is loaded, then allow the user to search until finished.
+     */
+    static async Task Main(string[] args)
+    {
+        //Attempt to read file while one is not loaded and parsed or the user quits.
+        while (!(HasValidFile || HasQuit))
+        {
+            Console.WriteLine("Input the serialized file to be parsed. Supported File Types are:");
+            Console.WriteLine($" - {JSON_EXTENSION}");
+            Console.WriteLine($" - {XML_EXTENSION}");
+
+            var inputLine = GetInputFromConsole();
+
+            if (inputLine == null) continue;
+
+            //is .json file
+            if (inputLine.EndsWith(JSON_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
+            {
+                _fileReader = new JsonSerialFileReader(inputLine);
+
+                var result = await _fileReader.Parse();
+
+                if (result)
+                {
+                    HasValidFile = true;
+                }
+            }
+            //is .xml file
+            else if (inputLine.EndsWith(XML_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
+            {
+                //TODO: Implement
+            }
+            //unsupported file
+            else
+            {
+                Console.WriteLine("File inputted is not a supported format.");
+            }
+
+            if (HasValidFile) Console.WriteLine($"File {_fileReader.Filename} is ready to be searched.");
+        }
+
+        while (!HasQuit)
+        {
+            Console.WriteLine("Input any search parameters.");
+
+            var inputLine = GetInputFromConsole();
+
+            if (HasQuit) return;
+
+            _fileReader.Search(inputLine);
         }
     }
-    else if (inputLine.EndsWith(XML_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
-    {
-        //TODO: Implement
-    }
-    else
-    {
-        Console.WriteLine("File inputted is not a supported format.");
-    }
-
-    Console.WriteLine("End of Loop");
-}
-
-Console.WriteLine($"File {fileReader.Filename} is ready to be searched.");
-
-while (true)
-{
-    Console.WriteLine("Input any search parameters. Type Quit or X at any time to close application.");
-
-    var inputLine = Console.ReadLine();
-
-    if (string.IsNullOrWhiteSpace(inputLine)) continue;
-
-    if (inputLine.Equals(QUIT, StringComparison.InvariantCultureIgnoreCase) ||
-        inputLine.Equals(X, StringComparison.InvariantCultureIgnoreCase)) return;
-
-    fileReader.Search(inputLine);
 }
