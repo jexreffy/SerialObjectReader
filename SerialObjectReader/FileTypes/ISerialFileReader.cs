@@ -19,5 +19,11 @@ namespace SerialObjectReader.FileTypes
          * Returns: true if successful, false otherwise
          */
         public bool Parse();
+        /*
+         * Attempts to search the file using a given search parameter.
+         * Input: term - (string) the parameters used to search the file.
+         * Returns: true if successful, false otherwise
+         */
+        public bool Search(string term);
     }
 }

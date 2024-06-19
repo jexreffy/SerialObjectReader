@@ -6,9 +6,11 @@ namespace SerialObjectReader.FileTypes
 {
     public class JSONSerialFileReader : ISerialFileReader
     {
+        #region Variables
         private object parsedObject;
 
         private const string FILE_EXTENSION = ".json";
+        #endregion
 
         #region Constructors
         public JSONSerialFileReader(string filename)
@@ -17,12 +19,13 @@ namespace SerialObjectReader.FileTypes
         }
         #endregion
 
-        #region Properties
+        #region Interface Properties
         public string Filename { get; private set; }
-        public string FileExtension { get { return FILE_EXTENSION; } }
+        public string FileExtension => FILE_EXTENSION;
+
         #endregion
 
-        #region Methods
+        #region Interface Methods
         public bool Parse()
         {
             if (!File.Exists(Filename))
@@ -52,6 +55,12 @@ namespace SerialObjectReader.FileTypes
                 Console.WriteLine($"Contents of {Filename} are not valid json while having a .json extension.");
                 return false;
             }
+        }
+
+        public bool Search(string term)
+        {
+            Console.WriteLine($"Search parameter is {term}");
+            return false;
         }
         #endregion
     }
