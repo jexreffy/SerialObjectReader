@@ -83,7 +83,7 @@ class Program
 
             var inputLine = GetInputFromConsole();
 
-            if (HasQuit) return;
+            if (inputLine == null) continue;
 
             _fileReader.Search(inputLine);
         }

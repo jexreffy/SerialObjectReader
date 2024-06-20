@@ -10,11 +10,10 @@ namespace SerialObjectReader.FileTypes
          * The name of the file being parsed
          */
         public string Filename { get; private set; } = filename;
-
         /*
          * The file extension of the serialized file
          */
-        public string FileExtension => string.Empty;
+        public virtual string FileExtension => string.Empty;
         /*
          * Whether the file was successfully loaded and parsed.
          */
