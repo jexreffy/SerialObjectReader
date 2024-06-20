@@ -16,7 +16,7 @@ namespace SerialObjectReader.FileTypes
         #endregion
 
         #region Fields
-        public new string FileExtension => FILE_EXTENSION;
+        public override string FileExtension => FILE_EXTENSION;
         #endregion
 
         #region Interface Methods
