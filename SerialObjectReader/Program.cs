@@ -87,7 +87,7 @@ class Program
 
         while (!HasQuit)
         {
-            Console.WriteLine("Input any search parameters.");
+            Console.WriteLine("Input any search parameters. Use 'this' or 'root' to reference the root node.");
 
             var inputLine = GetInputFromConsole();
 
@@ -104,6 +104,8 @@ class Program
             }
 
             var nodeCount = await _fileReader.Search(searchKey, searchValue);
+
+            Console.WriteLine($"Number of Search Results: {nodeCount}");
         }
     }
 }

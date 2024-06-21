@@ -61,20 +61,27 @@ namespace SerialObjectReader.FileTypes
             }
 
             //Parse json file
-            var json = JsonConvert.DeserializeObject(jsonFile);
-
-            if (json != null)
+            try
             {
-                _parsedObject = json;
-                Console.WriteLine($"Contents of {Filename} have been parsed successfully.");
-                IsLoaded = true;
-            }
-            else
-            {
-                Console.WriteLine($"Contents of {Filename} are not valid json while having a .json extension.");
-            }
+                var json = JsonConvert.DeserializeObject(jsonFile);
 
-            return IsLoaded;
+                if (json != null)
+                {
+                    _parsedObject = json;
+                    Console.WriteLine($"Contents of {Filename} have been parsed successfully.");
+                    IsLoaded = true;
+                } else
+                {
+                    Console.WriteLine($"Contents of {Filename} are not valid json while having a .json extension.");
+                }
+
+                return IsLoaded;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return false;
+            }
         }
 
         /**
@@ -90,14 +97,16 @@ namespace SerialObjectReader.FileTypes
             var retVal = 0;
 
             var hasKey = !string.IsNullOrWhiteSpace(key);
+            var keyInProgress = key.StartsWith("this.") || key.StartsWith("root.");
+            var currentKey = keyInProgress ? key[5..] : key;
 
             if (_parsedObject is JObject)
             {
-                retVal += await SearchObject(_parsedObject as JObject, hasKey, false, key, value);
+                retVal += await SearchObject(_parsedObject as JObject, hasKey, keyInProgress, currentKey, value);
             }
             else if (_parsedObject is JArray)
             {
-                retVal += await SearchArray(_parsedObject as JArray, hasKey, false, key, value);
+                retVal += await SearchArray(_parsedObject as JArray, hasKey, keyInProgress, currentKey, value);
             }
 
             return retVal;
@@ -122,7 +131,27 @@ namespace SerialObjectReader.FileTypes
             {
                 var item = node[i];
 
-                retVal += await EvaluateNode(item, hasKey, keyInProgress, currentKey, value);
+                if (hasKey)
+                {
+                    if (currentKey.Equals(i.ToString()) && IsValidValue(item.Type) && DoesNodeMatchSearchValue(item, value))
+                    {
+                        retVal++;
+                        Console.WriteLine($"Found with Single Key and Value matches in Array.");
+                    }
+                    else if (currentKey.StartsWith($"{i.ToString()}."))
+                    {
+                        var newKey = currentKey[(i.ToString().Length + 1)..];
+                        retVal += await EvaluateNode(item, true, true, newKey, value);
+                    }
+                    else if (!keyInProgress)
+                    {
+                        retVal += await EvaluateNode(item, true, false, currentKey, value);
+                    }
+                }
+                else
+                {
+                    retVal += await EvaluateNode(item, false, false, currentKey, value);
+                }
             }
 
             return retVal;
@@ -145,15 +174,27 @@ namespace SerialObjectReader.FileTypes
 
             foreach (var item in node.Properties())
             {
-                if (hasKey && currentKey.Equals(item.Name))
+                if (hasKey)
                 {
-                    if (IsValidValue(item.Value.Type) && value.Equals(item.Value.ToString()))
+                    if (currentKey.Equals(item.Name) && IsValidValue(item.Value.Type) && DoesNodeMatchSearchValue(item.Value, value))
                     {
                         retVal++;
-                        Console.WriteLine($"Found with Single Key and Value matches");
+                        Console.WriteLine($"Found with Single Key and Value matches in Object.");
+                    }
+                    else if (currentKey.StartsWith($"{item.Name}."))
+                    {
+                        var newKey = currentKey[(item.Name.Length + 1)..];
+                        retVal += await EvaluateNode(item.Value, true, true, newKey, value);
+                    }
+                    else if (!keyInProgress)
+                    {
+                        retVal += await EvaluateNode(item.Value, true, false, currentKey, value);
                     }
                 }
-                retVal += await EvaluateNode(item.Value, hasKey, keyInProgress, currentKey, value);
+                else
+                {
+                    retVal += await EvaluateNode(item.Value, false, false, currentKey, value);
+                }
             }
 
             return retVal;
@@ -181,13 +222,10 @@ namespace SerialObjectReader.FileTypes
             {
                 retVal += await SearchArray(node as JArray, hasKey, keyInProgress, currentKey, value);
             }
-            else if (IsValidValue(node.Type))
+            else if (IsValidValue(node.Type) && !hasKey && DoesNodeMatchSearchValue(node, value))
             {
-                if (!hasKey && node.ToString().Equals(value))
-                {
-                    retVal++;
-                    Console.WriteLine($"Found with no Key and Value matches");
-                }
+                retVal++;
+                Console.WriteLine($"Found with no Key and Value matches");
             }
 
             return retVal;
@@ -223,6 +261,48 @@ namespace SerialObjectReader.FileTypes
         private static bool IsValidValue(JTokenType nodeType)
         {
             return nodeType is not (JTokenType.Object or JTokenType.Array or JTokenType.None or JTokenType.Null or JTokenType.Undefined or JTokenType.Constructor);
+        }
+
+        /**
+         * Determines if the Value Node matches the search value.
+         * Assumes that IsValidValue is true on node being evaluated.
+         * Input: node - (JToken) the node being evaluated.
+         * Returns: (bool) true if node matches the value given, false otherwise.
+         */
+        private static bool DoesNodeMatchSearchValue(JToken node, string value)
+        {
+            switch (node.Type) {
+                case JTokenType.Integer:
+                    if (int.TryParse(value, out var intValue))
+                    {
+                        return intValue == node.Value<int>();
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case JTokenType.Float:
+                    if (int.TryParse(value, out var floatValue))
+                    {
+                        return Math.Abs(floatValue - node.Value<float>()) < 1e-5;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case JTokenType.Boolean:
+                    return node.Value<bool>() == value.ToLowerInvariant().Equals("true");
+                    break;
+                case JTokenType.String:
+                case JTokenType.Date:
+                case JTokenType.Raw:
+                case JTokenType.Guid:
+                case JTokenType.Uri:
+                case JTokenType.TimeSpan:
+                    return node.Value<string>()?.Equals(value) ?? false;
+                default:
+                    return false;
+            }
         }
 
         #endregion
