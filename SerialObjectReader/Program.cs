@@ -2,6 +2,9 @@
 
 namespace SerialObjectReader;
 
+/**
+ * The Main Console Application
+ */
 class Program
 {
     private static SerialFileReader? _fileReader;
@@ -14,7 +17,7 @@ class Program
     public static bool HasValidFile { get; private set; }
     public static bool HasQuit { get; private set; }
 
-    /*
+    /**
      * Reused method for getting a line of text input from the console. Allows for the user to quit the application when desired.
      */
     private static string? GetInputFromConsole()
@@ -35,7 +38,12 @@ class Program
         return inputLine;
     }
 
-    /*
+    private static string? ParseSearchKey(string term)
+    {
+        return null;
+    }
+
+    /**
      * Main Method of the Application. Continue to attempt to read a serialized file until one is loaded, then allow the user to search until finished.
      */
     static async Task Main(string[] args)
@@ -85,7 +93,17 @@ class Program
 
             if (inputLine == null) continue;
 
-            _fileReader.Search(inputLine);
+            var searchKey = string.Empty;
+            var searchValue = inputLine;
+
+            if (inputLine.Contains('='))
+            {
+                var splitLine = inputLine.Split('=');
+                searchKey = splitLine[0];
+                searchValue = splitLine[1];
+            }
+
+            var nodeCount = await _fileReader.Search(searchKey, searchValue);
         }
     }
 }

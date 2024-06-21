@@ -8,10 +8,10 @@ using System.Xml.Serialization;
 
 namespace SerialObjectReader.FileTypes
 {
-    /*
+    /**
      * XmlSerialFileReader implements SerialFileReader for .xml files.
      */
-    public class XmlFileReader(string filename) : SerialFileReader(filename)
+    public class XmlSerialFileReader(string filename) : SerialFileReader(filename)
     {
         #region Variables
 
@@ -29,9 +29,9 @@ namespace SerialObjectReader.FileTypes
 
         #region Interface Methods
 
-        /*
+        /**
          * Asynchronously attempts to read and parse the serialized json file provided.
-         * Returns: true if successful, false otherwise
+         * Returns: (bool) true if successful, false otherwise
          */
         public override async Task<bool> Parse()
         {
@@ -55,15 +55,16 @@ namespace SerialObjectReader.FileTypes
             return IsLoaded;
         }
 
-        /*
+        /**
          * Asynchronously attempts to search the file using a given search parameter.
-         * Input: term - (string) the parameters used to search the file.
-         * Returns: true if successful, false otherwise
+         * Input: key - (string) the key provided to search the XML file, if no key was included, this will be null or empty.
+         * Input: value - (string) the value provided to search the XML file, cannot be null or empty.
+         * Returns: (int) the number of nodes that match the overall search term.
          */
-        public override async Task<bool> Search(string term)
+        public override async Task<int> Search(string key, string value)
         {
-            Console.WriteLine($"Search parameter is {term}");
-            return false;
+            Console.WriteLine($"Search parameter is {key} and {value}");
+            return 0;
         }
         #endregion
     }
