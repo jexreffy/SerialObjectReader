@@ -70,18 +70,18 @@ namespace SerialObjectReader.FileTypes
                     _parsedObject = json;
                     Console.WriteLine($"Contents of {Filename} have been parsed successfully.");
                     IsLoaded = true;
-                } else
+                }
+                else
                 {
                     Console.WriteLine($"Contents of {Filename} are not valid json while having a .json extension.");
                 }
-
-                return IsLoaded;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return false;
             }
+
+            return IsLoaded;
         }
 
         /**
@@ -304,7 +304,6 @@ namespace SerialObjectReader.FileTypes
                     return false;
             }
         }
-
         #endregion
     }
 }

@@ -74,7 +74,14 @@ class Program
             //is .xml file
             else if (inputLine.EndsWith(XML_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
             {
-                //TODO: Implement
+                _fileReader = new XmlSerialFileReader(inputLine);
+                 
+                var result = await _fileReader.Parse();
+                 
+                if (result)
+                {
+                    HasValidFile = true;
+                }
             }
             //unsupported file
             else
