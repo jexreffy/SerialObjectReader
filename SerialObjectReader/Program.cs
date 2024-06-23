@@ -11,6 +11,7 @@ class Program
 
     private const string JSON_EXTENSION = ".json";
     private const string XML_EXTENSION = ".xml";
+    private const string YML_EXTENSION = ".yml";
     private const string QUIT = "quit";
     private const string X = "x";
 
@@ -54,6 +55,7 @@ class Program
             Console.WriteLine("Input the serialized file to be parsed. Supported File Types are:");
             Console.WriteLine($" - {JSON_EXTENSION}");
             Console.WriteLine($" - {XML_EXTENSION}");
+            //Console.WriteLine($" - {YML_EXTENSION}");
 
             var inputLine = GetInputFromConsole();
 
@@ -83,6 +85,18 @@ class Program
                     HasValidFile = true;
                 }
             }
+            //is .yml file
+            /*else if (inputLine.EndsWith(YML_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
+            {
+                _fileReader = new YamlSerialFileReader(inputLine);
+
+                var result = await _fileReader.Parse();
+
+                if (result)
+                {
+                    HasValidFile = true;
+                }
+            }*/
             //unsupported file
             else
             {

@@ -1,0 +1,21 @@
+---
+- name: Jexreffy
+  role:
+    isMod: true
+    isAdmin: false
+- name: PhantomRyu
+  role:
+    isMod: true
+    isAdmin: true
+- name: TjMaelstrom
+  role:
+    isMod: false
+    isAdmin: false
+- name: ZephyrBlayze
+  role:
+    isMod: true
+    isAdmin: true
+- name: KwehstopherWarken
+  role:
+    isMod: true
+    isAdmin: false
