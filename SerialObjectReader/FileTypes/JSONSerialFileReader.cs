@@ -136,7 +136,8 @@ namespace SerialObjectReader.FileTypes
                     if (currentKey.Equals(i.ToString()) && IsValidValue(item.Type) && DoesNodeMatchSearchValue(item, value))
                     {
                         retVal++;
-                        Console.WriteLine($"Found with Single Key and Value matches in Array.");
+                        Console.WriteLine($"Found node that matches term.");
+                        Console.WriteLine(node.Parent.ToString());
                     }
                     else if (currentKey.StartsWith($"{i.ToString()}."))
                     {
@@ -179,7 +180,8 @@ namespace SerialObjectReader.FileTypes
                     if (currentKey.Equals(item.Name) && IsValidValue(item.Value.Type) && DoesNodeMatchSearchValue(item.Value, value))
                     {
                         retVal++;
-                        Console.WriteLine($"Found with Single Key and Value matches in Object.");
+                        Console.WriteLine($"Found node that matches term.");
+                        Console.WriteLine(node.Parent.ToString());
                     }
                     else if (currentKey.StartsWith($"{item.Name}."))
                     {
@@ -225,7 +227,8 @@ namespace SerialObjectReader.FileTypes
             else if (IsValidValue(node.Type) && !hasKey && DoesNodeMatchSearchValue(node, value))
             {
                 retVal++;
-                Console.WriteLine($"Found with no Key and Value matches");
+                Console.WriteLine($"Found node that matches term.");
+                Console.WriteLine(node.Parent.ToString());
             }
 
             return retVal;
